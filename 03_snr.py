@@ -3,17 +3,22 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from lib.util import SNR
 
-# Step 1: Load the RGB image
+# Load RGB image
 img_path = "dataset/SNR/dike_fold.png"
 img = Image.open(img_path).convert('RGB')
-img_array = np.array(img)  # shape: (H, W, 3)
+img_array = np.array(img)
 
-# Step 2: Choose vertical slice index (middle of image)
-# x_index = img_array.shape[1] // 2  # vertical column
+# Vertical slice index
 x_index = 158
 
-# Step 3: Extract red channel along the vertical line
-red_channel = img_array[:, :, 0]  # Red channel
-vector_1d = red_channel[:, x_index]  # Vertical slice
+# Extract red channel
+red_channel = img_array[:, :, 0]
+vector_clean = red_channel[:, x_index]
 
-SNR(img_array, x_index, vector_1d)
+# Add Gaussian noise
+noise_std = 20
+noise = np.random.normal(loc=0, scale=noise_std, size=vector_clean.shape)
+vector_noisy = np.clip(vector_clean + noise, 0, 255).astype(np.uint8)
+
+# Plot all
+SNR(img_array, x_index, vector_clean, vector_noisy)
