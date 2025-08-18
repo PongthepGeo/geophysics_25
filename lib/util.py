@@ -81,3 +81,23 @@ def loss(xy, stations, dists):
     x, y = xy
     return sum((np.sqrt((x - sx)**2 + (y - sy)**2) - dists[sta])**2
                for sta, (sx, sy) in stations.items())
+
+def SNR(img_array, x_index, vector_1d):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    # Left panel: RGB image with vertical line
+    ax1.imshow(img_array)
+    ax1.axvline(x=x_index, color='red', linestyle='--', label=f'x = {x_index}')
+    ax1.set_title("RGB Image with Vertical Slice")
+    ax1.axis('off')
+    ax1.legend()
+
+    # Right panel: red-channel intensity profile
+    ax2.plot(vector_1d, np.arange(len(vector_1d)), color='red')
+    ax2.set_title("Red Channel Profile at x = {}".format(x_index))
+    ax2.set_xlabel("Red Intensity")
+    ax2.set_ylabel("Vertical Pixel Position")
+    ax2.invert_yaxis()  # To match image coordinate origin
+
+    plt.tight_layout()
+    plt.show()
