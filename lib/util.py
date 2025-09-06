@@ -4,6 +4,7 @@ import matplotlib
 import numpy as np
 import os
 from matplotlib.patches import Circle
+from pathlib import Path
 
 params = {
 	'savefig.dpi': 300,  
@@ -109,3 +110,54 @@ def SNR(img_array, x_index, vector_clean, vector_noisy):
 
     plt.tight_layout()
     plt.show()
+
+def plot_gravity(gz_each_mgal, gz_total_mgal, x_obs, x_i, z_i, OUTDIR, x_min, x_max):
+    # 1) Single figure: all five sources + total on one plot
+    plt.figure(figsize=(10, 5))
+    for sidx in range(gz_each_mgal.shape[0]):
+        plt.plot(x_obs, gz_each_mgal[sidx], linewidth=1.8, label=f"source {sidx+1}")
+    # Plot total last for emphasis
+    plt.plot(x_obs, gz_total_mgal, linewidth=2.6, linestyle="-", label="total")
+    # Mark source x-positions
+    for xi in x_i:
+        plt.axvline(xi, linestyle="--", linewidth=1)
+    plt.title("Vertical gravity $g_z$ along surface (5 sources + total)")
+    plt.xlabel("x (m) at surface")
+    plt.ylabel("g_z (mGal, downward +)")
+    plt.grid(True, alpha=0.3)
+    plt.legend(ncols=3, frameon=True)
+    fig_profile = OUTDIR / "gz_profile_all.png"
+    plt.tight_layout()
+    plt.savefig(fig_profile, format="png")
+    plt.show()
+
+    # 2) Geometry figure: half-space with 5 sources and gravimeters
+    plt.figure(figsize=(10, 3.6))
+    # Surface line (z=0)
+    plt.hlines(0.0, x_min, x_max, linestyles="-", linewidth=2)
+    # Gravimeter stations (subsample to reduce clutter)
+    gstep = 25  # meters (show station every 25 m)
+    gpos = x_obs[::gstep]
+    plt.scatter(gpos, np.zeros_like(gpos), marker="^", s=20, label="gravimeters")
+    # Point sources
+    plt.scatter(x_i, z_i, marker="o", s=50, label="point sources")
+    for idx, (xi, zi) in enumerate(zip(x_i, z_i), start=1):
+        plt.text(xi, zi, f"  m{idx}", va="center")
+    # Axes and labels
+    plt.xlim(x_min, x_max)
+    zmax = max(z_i.max() + 20.0, 60.0)
+    plt.ylim(0.0, zmax)
+    ax = plt.gca()
+    ax.invert_yaxis()  # show depth increasing downward
+    plt.xlabel("x (m)")
+    plt.ylabel("z (m, downward +)")
+    plt.title("Half-space geometry: 5 sources and surface gravimeters")
+    plt.legend(frameon=True)
+    plt.tight_layout()
+    fig_geom = OUTDIR / "geometry_sources_gravimeters.png"
+    plt.savefig(fig_geom, format="png")
+    plt.show()
+
+    print("Saved figures:")
+    print(" -", fig_profile)
+    print(" -", fig_geom)
