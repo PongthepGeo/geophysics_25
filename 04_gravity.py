@@ -22,9 +22,9 @@ x_min, x_max, dx = -200.0, 200.0, 1.0
 x_obs = np.arange(x_min, x_max + dx, dx)
 
 # Five point sources (positions, depths, masses)
-x_i = np.array([-15.0, -5.0, 0.0, 7.0, 10.0])  # m
-z_i = np.array([40.0, 60.0, 80.0, 60.0, 40.0])     # m (downward +)
-m_i = np.array([2.0e9, 1.5e9, 3.0e9, 1.0e9, 2.5e9])# kg
+x_i = np.array([-5.0, 0.0, 7.0, 10.0, 150])  # m
+z_i = np.array([60.0, 80.0, 60.0, 40.0, 10])     # m (downward +)
+m_i = np.array([1.5e9, 3.0e9, 1.0e9, 2.5e9, 0.1e9])# kg
 
 # Compute per-source and total gz (m/s^2)
 gz_each = []
