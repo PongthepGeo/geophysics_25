@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 # Synthetic gravity response
 # ---------------------------------------------------------
 
+# 1000 is number of points along x-axis
 x = np.linspace(-6, 6, 1000)
 
 z = 2.0
