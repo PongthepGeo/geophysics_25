@@ -14,14 +14,15 @@ import deepwave
 #-----------------------------------------------------------------------------------------#
 
 # Image and velocity parameters
-image_path = 'dataset/salt/sigsbee_salt.png'
+image_path = 'salt/salt_final_02.png'
 minimum_velocity = 2000           # minimum velocity in m/s
 maximum_velocity = 4700           # maximum velocity in m/s
 # smooth = 20                       # Gaussian smoothing factor (higher = smoother, reduces scattering)
 smooth = 5                       # Gaussian smoothing factor (higher = smoother, reduces scattering)
 
 # Time parameters
-nt = 400                          # Number of time steps
+# nt = 400                          # Number of time steps
+nt = 1200                          # Number of time steps
 dt = 0.004                        # Temporal sampling interval in seconds
 
 # Source parameters

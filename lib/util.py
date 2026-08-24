@@ -6,6 +6,7 @@ import os
 from matplotlib.patches import Circle
 from pathlib import Path
 
+import matplotlib
 params = {
 	'savefig.dpi': 300,  
 	'figure.dpi' : 100,
