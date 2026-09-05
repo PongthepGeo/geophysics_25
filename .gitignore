@@ -3,9 +3,8 @@ dataset/
 command.md
 npy_folder/
 image_out/
-01_code/keep/
-01_code/ch_02_01_gravity/
-01_code/ch_02_02_gravity_matrix/
-01_code/ch_02_03_gravity_salt/
-01_code/final/
-01_code/ch_02_03_gravity_salt/
+keep/
+ch_02_01_gravity/
+ch_02_02_gravity_matrix/
+ch_02_03_gravity_salt/
+final/
