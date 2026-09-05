@@ -6,19 +6,13 @@ import matplotlib.pyplot as plt
 # =============================
 # PLOT STYLE
 # =============================
-params = {
-    'savefig.dpi': 300,
-    'figure.dpi': 100,
-    'axes.labelsize': 12,
-    'axes.titlesize': 12,
-    'axes.titleweight': 'bold',
-    'legend.fontsize': 10,
-    'xtick.labelsize': 10,
-    'ytick.labelsize': 10,
-    'font.family': 'serif',
-    'font.serif': 'Times New Roman'
-}
-matplotlib.rcParams.update(params)
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1] / "lib"))
+from control_plot import PLOT_PARAMS  # shared global plot style
+
+matplotlib.rcParams.update(PLOT_PARAMS)
 
 
 # =============================

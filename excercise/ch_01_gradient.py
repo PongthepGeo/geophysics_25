@@ -3,19 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 
-PLOT_PARAMS = {
-    "savefig.dpi": 300,
-    "figure.dpi": 100,
-    "axes.labelsize": 12,
-    "axes.titlesize": 12,
-    "axes.titleweight": "bold",
-    "legend.fontsize": 10,
-    "xtick.labelsize": 10,
-    "ytick.labelsize": 10,
-    "font.family": "serif",
-    "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
-    "mathtext.fontset": "stix",
-}
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parents[1] / "lib"))
+from control_plot import PLOT_PARAMS  # shared global plot style
 
 matplotlib.rcParams.update(PLOT_PARAMS)
 
@@ -69,7 +61,7 @@ print(max_amp)
 # Plot
 # ---------------------------------------------------------
 
-fig, ax = plt.subplots(figsize=(8, 4))
+fig, ax = plt.subplots()  # uses the global figure.figsize default
 ax.plot(x, g, linewidth=2.0, label=r"$g$",)
 ax.plot(x, dg_dx, linewidth=2.0, label=r"$\partial g/\partial x$",)
 ax.plot(x, dg_dy, linewidth=2.0, label=r"$\partial g/\partial y$",)

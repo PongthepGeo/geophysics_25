@@ -2,15 +2,19 @@
 # - Uses user's equation:
 #     g_z(x0') = G * sum_i [ m_i * z_i / ((x0'-x_i)^2 + z_i^2)^(3/2) ]
 # - Observation line: z' = 0 (surface), downward is positive (z_i > 0)
-# - Outputs: two SVG figures, no CSV
+# - Outputs: two PNG figures, no CSV
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from pathlib import Path
+from lib.control_plot import PLOT_PARAMS  # shared global plot style
 from lib.util import plot_gravity
 
+matplotlib.rcParams.update(PLOT_PARAMS)
+
 # Output folder (saved where you can download)
-OUTDIR = Path("halfspace_gz_demo")
+OUTDIR = Path("ch_02_01_gravity")
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 # Constants

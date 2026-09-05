@@ -9,19 +9,11 @@ import os
 from tqdm import tqdm
 #-----------------------------------------------------------------------------------------#
 import matplotlib
-params = {
-	'savefig.dpi': 300,
-	'figure.dpi' : 300,
-	'axes.labelsize':12,
-	'axes.titlesize':12,
-	'axes.titleweight': 'bold',
-	'legend.fontsize': 10,
-	'xtick.labelsize':10,
-	'ytick.labelsize':10,
-	'font.family': 'serif',
-	'font.serif': 'Times New Roman'
-}
-matplotlib.rcParams.update(params)
+try:  # shared global plot style (lib/control_plot.py)
+	from .control_plot import PLOT_PARAMS
+except ImportError:
+	from control_plot import PLOT_PARAMS
+matplotlib.rcParams.update(PLOT_PARAMS)
 #-----------------------------------------------------------------------------------------#
 
 class WAVE:

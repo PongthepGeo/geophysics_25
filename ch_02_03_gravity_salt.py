@@ -1,8 +1,15 @@
+import time
+
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from pathlib import Path
 import cv2
-from tqdm import tqdm
+
+from lib.control_plot import PLOT_PARAMS  # shared global plot style
+from lib.progress import Progress, StageTimer  # shared progress reporting (see lib/progress.py)
+
+matplotlib.rcParams.update(PLOT_PARAMS)
 
 # =========================================================================
 # CONFIGURATION PARAMETERS - EDIT HERE
@@ -10,8 +17,9 @@ from tqdm import tqdm
 
 # Input/Output settings
 img_path = "dataset/salt/salt_basement.png"  # Path to input image
-save_folder = "salt"                          # Output folder
-save_result = "gz_profile.png"  # Output filename
+save_folder = "ch_02_03_gravity_salt"         # Output folder
+save_sigma_image = "sigma_image.png"  # Output filename (density-contrast map)
+save_result = "gz_profile.png"        # Output filename (predicted gz profile)
 
 # Density contrast values for different pixel intensities
 SALT_PIXEL_VALUE = 94      # Pixel value representing salt bodies
@@ -29,6 +37,12 @@ NUM_STATIONS = 50         # Number of gravity measurement stations
 G = 6.67430e-11           # Gravitational constant (m³ kg⁻¹ s⁻²)
 MS2_TO_MGAL = 1e5         # Conversion factor: 1 m/s² = 1e5 mGal
 eps = 1e-12               # Small number to prevent division by zero
+
+# Demo pacing: the real computation below is fast enough to finish before a
+# class can read the progress bar. These add an artificial delay so each
+# stage "breathes" at a visible pace -- set both to 0 to run at full speed.
+STATION_PACE_SEC = 0.0   # sleep per station in the reference loop (real timing is enough)
+STAGE_PACE_SEC = 1.5     # sleep added to each vectorized (StageTimer) stage
 
 # =========================================================================
 # END CONFIGURATION
@@ -70,13 +84,13 @@ zg = 0.0  # all stations at the surface (z' = 0)
 
 
 # ------------------------------------------------------------
-# 3) Single-station, explicit 2D for-loop (reference/clarity)
+# 3) Per-station, explicit 2D for-loop (reference/clarity)
 #    g_z(x') = sum_{z=0..H-1} sum_{x=0..W-1} G * z / [(x'-x)^2 + z^2]^(3/2) * σ[x,z]
 #    Downward is positive; z is the pixel row index (0 at top).
 # ------------------------------------------------------------
 def gz_single_station_loop(xg):
     acc = 0.0
-    for z in tqdm(range(H), desc="Computing gravity (loop method)", leave=False):
+    for z in range(H):
         dz = float(z)  # since z' = 0 and pixel location is z (no +0.5)
         for x in range(W):
             dx = xg - float(x)
@@ -85,11 +99,15 @@ def gz_single_station_loop(xg):
             acc += G * dz / r3 * sigma2d_padded[z, x]
     return acc  # [m/s^2]
 
-# Example check: first station via loop
-with tqdm(total=100, desc="Station 0 calculation") as pbar:
-    gz0_ms2_loop = gz_single_station_loop(xg_pix[0])
-    gz0_mgal_loop = gz0_ms2_loop * MS2_TO_MGAL
-    pbar.update(100)
+# Reference check: every station via the brute-force loop above, so it can
+# be compared against the matrix-form result computed in section 4.
+gz_loop_ms2 = np.empty(NUM_STATIONS, dtype=float)
+with Progress(total=NUM_STATIONS, label="gz stations", unit="station") as bar:
+    for s, xg in enumerate(xg_pix):
+        gz_loop_ms2[s] = gz_single_station_loop(xg)
+        time.sleep(STATION_PACE_SEC)
+        bar.update(1)
+gz_loop_mgal = gz_loop_ms2 * MS2_TO_MGAL
 
 # ------------------------------------------------------------
 # 4) Matrix form: g = A_z σ
@@ -98,55 +116,67 @@ with tqdm(total=100, desc="Station 0 calculation") as pbar:
 #    A_{j,i} = G * z_i / [ (x'_j - x_i)^2 + z_i^2 ]^(3/2)
 # ------------------------------------------------------------
 # Mass coordinates (flattened in 'C' order: row z runs slowest? Actually in C: last axis changes fastest → x varies fastest)
-with tqdm(total=100, desc="Building coordinate arrays") as pbar:
+with StageTimer("coord arrays"):
     # [0,1,...,W-1, 0,1,...] length H*W
-    x_i = np.tile(np.arange(W, dtype=float), H)         
-    pbar.update(50)
+    x_i = np.tile(np.arange(W, dtype=float), H)
     # [0,0,...,0, 1,1,...,1, ...] length H*W
-    z_i = np.repeat(np.arange(H, dtype=float), W)       
-    pbar.update(50)
+    z_i = np.repeat(np.arange(H, dtype=float), W)
+    time.sleep(STAGE_PACE_SEC)
 
 # Broadcast station x' against all mass (x_i, z_i)
-with tqdm(total=100, desc="Building gravity matrix") as pbar:
+with StageTimer("gravity matrix"):
     dx = xg_pix[:, None] - x_i[None, :]                 # (M, N)
-    pbar.update(25)
     dz = z_i[None, :]                                   # (1, N) since z' = 0
-    pbar.update(25)
     r2 = dx*dx + dz*dz
-    pbar.update(25)
     r3 = (r2 + eps)**1.5
     Az = G * dz / r3                                    # (M, N)
-    pbar.update(25)
+    time.sleep(STAGE_PACE_SEC)
 
 # Forward model
-with tqdm(total=100, desc="Computing forward model") as pbar:
+with StageTimer("forward model"):
     gz_ms2 = Az @ sigma_vec                             # (M,)
-    pbar.update(50)
     gz_mgal = gz_ms2 * MS2_TO_MGAL
-    pbar.update(50)
+    time.sleep(STAGE_PACE_SEC)
+
+# Sanity check: loop (section 3) vs matrix (section 4) should agree
+max_diff_mgal = np.max(np.abs(gz_loop_mgal - gz_mgal))
+print(f"Loop vs matrix max difference: {max_diff_mgal:.3e} mGal")
 
 # ------------------------------------------------------------
-# 5) Plot
+# 5) Plot -- two separate figures, saved separately
 # ------------------------------------------------------------
-fig, axes = plt.subplots(1, 2, figsize=(12, 4.5), constrained_layout=True)
 
-axes[0].imshow(sigma2d_padded, cmap="gray", origin="upper")
-axes[0].scatter(xg_pix, np.zeros_like(xg_pix), s=14, c="red", marker="^", label="Stations z'=0")
+# 5a) sigma-image: density-contrast map with stations + padding boundaries
+fig_sigma, ax_sigma = plt.subplots()
+ax_sigma.imshow(sigma2d_padded, cmap="gray", origin="upper")
+ax_sigma.scatter(xg_pix, np.zeros_like(xg_pix), s=14, c="red", marker="^", label="Stations z'=0")
 # Add dashed lines to show synthetic expansion boundaries
-axes[0].axvline(x=pad_width, color='blue', linestyle='--', alpha=0.7, label='Synthetic boundary')
-axes[0].axvline(x=pad_width + original_width, color='blue', linestyle='--', alpha=0.7)
-axes[0].set_title("σ-image (padded, each pixel = one point mass)")
-axes[0].set_xlabel("x (px)")
-axes[0].set_ylabel("z (px)")
-axes[0].legend(loc="lower right")
-
-station_numbers = np.arange(1, len(xg_pix) + 1)
-axes[1].plot(station_numbers, gz_mgal, lw=1.8)
-axes[1].set_title(r"Predicted $g_z$ along surface (downward $+$)")
-axes[1].set_xlabel("Gravitational Station")
-axes[1].set_ylabel(r"$g_z$ (mGal)")
+ax_sigma.axvline(x=pad_width, color='blue', linestyle='--', alpha=0.7, label='Synthetic boundary')
+ax_sigma.axvline(x=pad_width + original_width, color='blue', linestyle='--', alpha=0.7)
+ax_sigma.set_title("σ-image (padded, each pixel = one point mass)")
+ax_sigma.set_xlabel("x (px)")
+ax_sigma.set_ylabel("z (px)")
+ax_sigma.legend(loc="lower right")
 plt.show()
 
-fig.savefig(OUTDIR / save_result, dpi=300)
-plt.close(fig)
+sigma_fig_path = OUTDIR / save_sigma_image
+fig_sigma.savefig(sigma_fig_path, dpi=300)
+plt.close(fig_sigma)
+
+# 5b) predicted gz profile
+fig_profile, ax_profile = plt.subplots()
+station_numbers = np.arange(1, len(xg_pix) + 1)
+ax_profile.plot(station_numbers, gz_mgal, lw=1.8)
+ax_profile.set_title(r"Predicted $g_z$ along surface (downward $+$)")
+ax_profile.set_xlabel("Gravitational Station")
+ax_profile.set_ylabel(r"$g_z$ (mGal)")
+plt.show()
+
+profile_fig_path = OUTDIR / save_result
+fig_profile.savefig(profile_fig_path, dpi=300)
+plt.close(fig_profile)
+
+print("Saved figures:")
+print(" -", sigma_fig_path)
+print(" -", profile_fig_path)
 
