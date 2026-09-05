@@ -52,11 +52,18 @@ dg_dy /= np.max(np.abs(dg_dy))
 # Enhance dg_dx
 # ---------------------------------------------------------
 
-print(dg_dx.shape)
+# print(dg_dx)
+# dg_dx_new = 2 * dg_dx
 # preallocate
 amplify = np.zeros_like(dg_dx)
-amplify = dg_dx
+# print(amplify)
+# amplify = dg_dx
+# amplify[500:] = dg_dx[:500] + dg_dx[500:] * 2 
 amplify[500:] = dg_dx[500:] * 2 
+amplify[:500] = dg_dx[:500] 
+
+max_amp = np.max(np.abs(amplify[:500]))
+print(max_amp)
 
 # ---------------------------------------------------------
 # Plot
