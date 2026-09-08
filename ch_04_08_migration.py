@@ -40,7 +40,7 @@ receiver_depth = 0
 dx = 4.0                          # Spatial sampling interval in meters
 
 # Input/Output parameters
-npy_folder = 'npy_folder'         # Load shot data from this folder
+npy_folder = 'ch_04_07_loop_shot'  # Load shot data from this folder (output of ch_04_07_loop_shot.py)
 
 # Optimization parameters
 optimizer_name = 'Adam'
@@ -50,8 +50,8 @@ n_epochs = 1
 
 # Output parameters
 clip_percent = 95                 # Percentile for clipping migration result
-migration_npy_path = 'image_out/migration.npy'
-migration_save_path = 'image_out/migrated_image.png'
+migration_npy_path = 'ch_04_08_migration/migration.npy'
+migration_save_path = 'ch_04_08_migration/migrated_image.png'
 
 #-----------------------------------------------------------------------------------------#
 # NOTE Setup

@@ -7,8 +7,8 @@ ERT forward modelling — dipole–dipole, 3 layers + polygon anomaly.
 - Headless; saves PNG only.
 
 Files:
-  forward_3layer.dat
-  figure_out/ert_forward_3layer.png
+  ch_03_01_resistivity/forward_3layer.dat
+  ch_03_01_resistivity/ert_forward_3layer.png
 """
 import os
 import numpy as np
@@ -20,6 +20,9 @@ mpl.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.patches import PathPatch
+
+from lib.control_plot import PLOT_PARAMS  # shared global plot style
+mpl.rcParams.update(PLOT_PARAMS)
 
 import pygimli as pg
 from pygimli.physics import ert
@@ -62,14 +65,16 @@ noise_level = 0.0                      # Noise level (relative)
 noise_abs = 0.0                        # Absolute noise
 
 # Output parameters
-output_data_file = "forward_3layer.dat"
-output_figure_dir = "figure_out"
-output_figure_file = "figure_out/ert_forward_3layer.png"
+output_figure_dir = "ch_03_01_resistivity"
+output_data_file = f"{output_figure_dir}/forward_3layer.dat"
+output_figure_file = f"{output_figure_dir}/ert_forward_3layer.png"
 figure_dpi = 300
 
 #-----------------------------------------------------------------------------------------#
 
 def main():
+    os.makedirs(output_figure_dir, exist_ok=True)
+
     # ----------------------------
     # Domain & grid setup
     # ----------------------------
@@ -116,7 +121,6 @@ def main():
     #   - Top: true model (invert y so (0,0) shows at top-left)
     #   - Bottom: apparent-resistivity pseudosection (no inversion)
     # ----------------------------
-    os.makedirs(output_figure_dir, exist_ok=True)
     fig = plt.figure(figsize=(10, 8))
 
     # (a) True model
@@ -124,7 +128,7 @@ def main():
     gci, cbar = pg.show(mesh, data=res, ax=ax1, logScale=True, cMap="Spectral_r",
                         cMin=min(rho1, rho2, rho3, rho_anom),
                         cMax=max(rho1, rho2, rho3, rho_anom),
-                        label="True resistivity (Ω·m)", orientation="vertical",
+                        label=r"True resistivity ($\Omega\cdot$m)", orientation="vertical",
                         showMesh=False)
     ax1.set_title("True 3-layer model with polygon anomaly  (display top-left = (0,0))")
     ax1.set_xlabel("x (m)")
@@ -143,7 +147,7 @@ def main():
     p5, p95 = np.percentile(data["rhoa"], [5, 95])
     ert.show(data, ax=ax2, logScale=True, cMap="Spectral_r",
              cMin=p5, cMax=p95, orientation="vertical")
-    ax2.set_title("Apparent resistivity pseudosection (dipole–dipole)")
+    ax2.set_title("Apparent resistivity pseudosection (dipole--dipole)")
     ax2.set_xlabel("x (m)")
     ax2.set_ylabel("Pseudo-depth")
 

@@ -32,7 +32,7 @@ freq = 25                         # Frequency of the source in Hz
 dx = 4.0                          # Spatial sampling interval in meters
 
 # Output parameters
-save_path = "image_out/box_wave_propagation.png"
+save_path = "ch_04_04_box/box_wave_propagation.png"
 
 #-----------------------------------------------------------------------------------------#
 # NOTE Setup

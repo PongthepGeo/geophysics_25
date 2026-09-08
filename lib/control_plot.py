@@ -1,4 +1,4 @@
-"""Global matplotlib style shared by every figure script in 01_code.
+r"""Global matplotlib style shared by every figure script in 01_code.
 
 The dpi/font-family core is mirrored from the manuscript figure code at
 /home/laptop_pt/Desktop/work/paper/03_thin_section/manuscript/figure_code/control_plot.py
@@ -16,6 +16,15 @@ additions sit on top of that shared core (not present in the paper file):
     and should stay that way -- one global size can't fit every layout.
   - Larger label/tick/legend/title sizes than the paper file, since text
     at the paper's sizes reads too small once shrunk into a beamer slide.
+  - "text.usetex": True -- labels/titles/legends are typeset by a real
+    LaTeX install (matching the beamer slides), not matplotlib's built-in
+    mathtext. This means any text handed to a title/label/legend call is
+    LaTeX source, not a plain string: escape LaTeX-special characters
+    that appear outside math mode ($, %, &, #, _, ^, {, }, ~, \\) and put
+    real math in $...$ (e.g. r"$g_z$", not "g_z"). Plain non-ASCII text
+    (e.g. literal "σ" or "Ω" typed directly, an en dash "–") will fail to
+    compile -- use the LaTeX command instead (r"$\sigma$", r"$\Omega$",
+    "--" for an en dash).
 
 Usage:
     import sys
@@ -42,4 +51,6 @@ PLOT_PARAMS = {
     "font.family": "serif",
     "font.serif": ["Times New Roman", "Times"],
     "mathtext.fontset": "stix",
+    "text.usetex": True,
+    "text.latex.preamble": r"\usepackage{mathptmx}",  # Times-like text+math, matches font.serif above
 }

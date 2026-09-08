@@ -3,6 +3,8 @@ import sys
 sys.path.append('./lib')
 from WAVE import WAVE
 #-----------------------------------------------------------------------------------------#
+from PIL import Image
+import numpy as np
 import torch
 #-----------------------------------------------------------------------------------------#
 
@@ -10,15 +12,14 @@ import torch
 # NOTE Input Variables
 #-----------------------------------------------------------------------------------------#
 
-# Velocity parameters
-sandstone = 2700                  # velocity in m/s
-limestone = 3300                  # velocity in m/s
-
-# Model size
-ny, nx = 500, 500                 # model size
+# Image and velocity parameters
+image_path = 'dataset/salt/sigsbee_salt.png'
+minimum_velocity = 2000           # minimum velocity in m/s
+maximum_velocity = 4700           # maximum velocity in m/s
+resize_factor = 2                 # resize image by dividing by this factor
 
 # Time parameters
-time_steps = [50, 100, 120, 160]  # snapshot of wave propagation (ms)
+time_steps = [50, 75, 100, 120]  # snapshot of wave propagation (ms)
 dt = 0.004                        # Temporal sampling interval in seconds
 
 # Source parameters
@@ -28,7 +29,8 @@ freq = 25                         # Frequency of the source in Hz
 dx = 4.0                          # Spatial sampling interval in meters
 
 # Output parameters
-save_path = "image_out/two_layers_wave_propagation.png"
+velocity_save_path = 'ch_04_06_salt/salt_velocity_model.png'
+wave_save_path = 'ch_04_06_salt/salt_wave_propagation.png'
 
 #-----------------------------------------------------------------------------------------#
 # NOTE Setup
@@ -36,19 +38,26 @@ save_path = "image_out/two_layers_wave_propagation.png"
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Using device:", device)
+dtype = torch.float
 
-# NOTE Create a source location
+# NOTE Import the image and convert it to velocity model
+img = Image.open(image_path)
+width, height = img.size
+img_resized = img.resize((width // resize_factor, height // resize_factor))
+img_arr = np.array(img_resized)
+
+# Convert image to velocity model
+velocity_array = WAVE.photo2velocity(img_arr, minimum_velocity, maximum_velocity, velocity_save_path)
+
+# NOTE Create velocity model and locate source
+ny, nx = velocity_array.shape
 source_location = torch.tensor([[[0, nx // 2]]]).to(device)
-
-# NOTE Create a velocity model (two layers)
-vp = sandstone * torch.ones(ny, nx)
-vp[int(ny // 2):, :] = limestone  # Bottom half is limestone
-vp = vp.to(device)
+vp = torch.tensor(velocity_array, dtype=dtype).to(device)
 
 #-----------------------------------------------------------------------------------------#
-# NOTE Plot the wave propagation
+# NOTE Compute wave propagation and plot snapshots of wave propagation
 #-----------------------------------------------------------------------------------------#
 
-WAVE.plot_wave_propagation(vp, dx, dt, freq, time_steps, device, source_location, save_path)
+WAVE.plot_wave_propagation_dtype(vp, dx, dt, freq, time_steps, dtype, device, source_location, wave_save_path)
 
 #-----------------------------------------------------------------------------------------#

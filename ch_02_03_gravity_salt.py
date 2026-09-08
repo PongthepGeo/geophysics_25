@@ -153,7 +153,7 @@ ax_sigma.scatter(xg_pix, np.zeros_like(xg_pix), s=14, c="red", marker="^", label
 # Add dashed lines to show synthetic expansion boundaries
 ax_sigma.axvline(x=pad_width, color='blue', linestyle='--', alpha=0.7, label='Synthetic boundary')
 ax_sigma.axvline(x=pad_width + original_width, color='blue', linestyle='--', alpha=0.7)
-ax_sigma.set_title("σ-image (padded, each pixel = one point mass)")
+ax_sigma.set_title(r"$\sigma$-image (padded, each pixel = one point mass)")
 ax_sigma.set_xlabel("x (px)")
 ax_sigma.set_ylabel("z (px)")
 ax_sigma.legend(loc="lower right")

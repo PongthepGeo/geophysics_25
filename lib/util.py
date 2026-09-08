@@ -116,7 +116,7 @@ def plot_gravity(gz_each_mgal, gz_total_mgal, x_obs, x_i, z_i, OUTDIR, x_min, x_
         plt.axvline(xi, linestyle="--", linewidth=1)
     plt.title("Vertical gravity $g_z$ along surface (5 sources + total)")
     plt.xlabel("x (m) at surface")
-    plt.ylabel("g_z (mGal, downward +)")
+    plt.ylabel(r"$g_z$ (mGal, downward +)")
     plt.grid(True, alpha=0.3)
     plt.legend(ncols=2, frameon=True, loc="upper right")
     fig_profile = OUTDIR / "gz_profile_all.png"
@@ -185,7 +185,7 @@ def plot_gravity_matrix(gz_each_mgal: np.ndarray,
 
     plt.title(r"Vertical gravity $g_z$ along surface (matrix form: $g_z=A_z\,\sigma$)")
     plt.xlabel("x (m) at surface")
-    plt.ylabel("g_z (mGal, downward +)")
+    plt.ylabel(r"$g_z$ (mGal, downward +)")
     plt.grid(True, alpha=0.3)
     plt.legend(ncols=2, frameon=True, loc="upper right")
     fig_profile = OUTDIR / "gz_profile_all.png"

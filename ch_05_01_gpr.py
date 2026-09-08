@@ -1,8 +1,13 @@
 from readgssi import readgssi
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 # pip install readgssi
+
+from lib.control_plot import PLOT_PARAMS  # shared global plot style
+
+matplotlib.rcParams.update(PLOT_PARAMS)
 
 GPR_file = 'dataset/line_001.DZT'
 
