@@ -29,8 +29,8 @@ freq = 25                         # Frequency of the source in Hz
 dx = 4.0                          # Spatial sampling interval in meters
 
 # Output parameters
-velocity_save_path = 'ch_04_06_salt/salt_velocity_model.png'
-wave_save_path = 'ch_04_06_salt/salt_wave_propagation.png'
+velocity_save_path = 'ch_05_06_salt/salt_velocity_model.png'
+wave_save_path = 'ch_05_06_salt/salt_wave_propagation.png'
 
 #-----------------------------------------------------------------------------------------#
 # NOTE Setup

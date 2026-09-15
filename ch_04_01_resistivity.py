@@ -7,8 +7,8 @@ ERT forward modelling — dipole–dipole, 3 layers + polygon anomaly.
 - Headless; saves PNG only.
 
 Files:
-  ch_03_01_resistivity/forward_3layer.dat
-  ch_03_01_resistivity/ert_forward_3layer.png
+  ch_04_01_resistivity/forward_3layer.dat
+  ch_04_01_resistivity/ert_forward_3layer.png
 """
 import os
 import numpy as np
@@ -65,7 +65,7 @@ noise_level = 0.0                      # Noise level (relative)
 noise_abs = 0.0                        # Absolute noise
 
 # Output parameters
-output_figure_dir = "ch_03_01_resistivity"
+output_figure_dir = "ch_04_01_resistivity"
 output_data_file = f"{output_figure_dir}/forward_3layer.dat"
 output_figure_file = f"{output_figure_dir}/ert_forward_3layer.png"
 figure_dpi = 300

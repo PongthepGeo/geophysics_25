@@ -11,24 +11,23 @@ import torch
 #-----------------------------------------------------------------------------------------#
 
 # Velocity parameters
-sandstone = 4500                  # velocity in m/s
-salt = 2500                       # velocity in m/s
+sandstone = 2500                 # velocity in m/s
 
 # Model size
-ny, nx = 500, 500                 # model size
+ny, nx = 1000, 1000              # model size
 
 # Time parameters
-time_steps = [50, 70, 140, 200]   # snapshot of wave propagation (ms)
-dt = 0.004                        # Temporal sampling interval in seconds
+time_steps = [80, 120, 140, 180] # snapshot of wave propagation (ms)
+dt = 0.004                       # Temporal sampling interval (time step) in seconds
 
 # Source parameters
-freq = 25                         # Frequency of the source in Hz
+freq = 25                        # Frequency of the source in Hz
 
 # Spatial parameters
-dx = 4.0                          # Spatial sampling interval in meters
+dx = 4.0                         # Spatial sampling interval (distance between grid points) in meters
 
 # Output parameters
-save_path = "ch_04_03_multiple/multiple_layers_wave_propagation.png"
+save_path = "ch_05_01_acoustic_wave/wave_propagation.png"
 
 #-----------------------------------------------------------------------------------------#
 # NOTE Setup
@@ -38,15 +37,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Using device:", device)
 
 # NOTE Create a source location
-source_location = torch.tensor([[[0, nx // 2]]]).to(device)
+source_location = torch.tensor([[[ny // 2, nx // 2]]]).to(device)
 
-# NOTE Create a velocity model (three layers: salt-sandstone-salt)
-salt_end = ny // 3
-sandstone_end = 2 * ny // 3
+# NOTE Create a velocity model
 vp = sandstone * torch.ones(ny, nx)
-vp[:salt_end, :] = salt           # Top layer is salt
-vp[salt_end:sandstone_end, :] = sandstone  # Middle layer is sandstone
-vp[sandstone_end:, :] = salt      # Bottom layer is salt
+vp = torch.transpose(vp, 0, 1)  # Transpose the model
 vp = vp.to(device)
 
 #-----------------------------------------------------------------------------------------#

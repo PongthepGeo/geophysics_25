@@ -41,7 +41,7 @@ receiver_depth = 0
 dx = 4.0                          # Spatial sampling interval in meters
 
 # Output parameters
-output_dir = 'ch_04_07_loop_shot'  # Directory to save receiver data
+output_dir = 'ch_05_07_loop_shot'  # Directory to save receiver data
 
 #-----------------------------------------------------------------------------------------#
 # NOTE Setup
