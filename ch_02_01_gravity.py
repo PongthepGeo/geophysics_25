@@ -37,9 +37,7 @@ for xi, zi, mi in zip(x_i, z_i, m_i):
     r2 = dx_i**2 + zi**2
     r3 = r2 ** 1.5
     gz_i = G * mi * zi / r3  # m/s^2 (downward +)
-    # print(gz_i)
     gz_each.append(gz_i)
-    # print(f"Source at x={xi:.1f} m, z={zi:.1f} m, m={mi:.2e} kg: gz range = {gz_i.min():.2e} to {gz_i.max():.2e} m/s^2")
 gz_each = np.vstack(gz_each)
 gz_total = gz_each.sum(axis=0)
 

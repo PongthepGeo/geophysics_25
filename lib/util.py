@@ -156,6 +156,99 @@ def plot_gravity(gz_each_mgal, gz_total_mgal, x_obs, x_i, z_i, OUTDIR, x_min, x_
     print(" -", fig_profile)
     print(" -", fig_geom)
 
+def plot_gravity_potential_gradient(x_obs: np.ndarray,
+                                     x_i: np.ndarray,
+                                     z_i: np.ndarray,
+                                     r_body: float,
+                                     gz_mgal: np.ndarray,
+                                     V_si: np.ndarray,
+                                     dgz_dx_E: np.ndarray,
+                                     OUTDIR: Path,
+                                     x_min: float,
+                                     x_max: float,
+                                     dpi: int = 300,
+                                     body_outline: np.ndarray = None,
+                                     body_label: str = "buried body") -> None:
+    """Buried circular body: geometry + the V -> g_z -> dg_z/dx chain
+    (used by ch_02_04_gravity_matrix_potential_gradient.py).
+
+    All three profiles come from the *same* buried body, so plotting them
+    stacked on a shared x-axis shows directly how each derivative narrows
+    the anomaly -- the same point made in the "Chain of Resolution" slide.
+
+    body_outline: optional (K,2) array of (x,z) points describing an
+    irregular, "circle-like" outline to draw instead of a perfect Circle
+    (e.g. a natural dissolution cavity) -- the physics still uses the
+    simple equivalent-point-mass approximation regardless of which shape
+    is drawn; only the geometry panel's artwork changes.
+    """
+    OUTDIR = Path(OUTDIR)
+    OUTDIR.mkdir(parents=True, exist_ok=True)
+
+    # 1) Geometry: half-space with the buried body + surface stations
+    # (short/wide cross-section -- intentionally not the global 16:9 default)
+    plt.figure(figsize=(10, 3.6))
+    plt.hlines(0.0, x_min, x_max, linestyles="-", linewidth=2, label="surface (z=0)")
+    gstep = 25
+    gpos = x_obs[::gstep]
+    plt.scatter(gpos, np.zeros_like(gpos), marker="^", s=20, label="gravimeters")
+    ax = plt.gca()
+    if body_outline is not None:
+        poly = plt.Polygon(body_outline, closed=True, facecolor="0.6",
+                            edgecolor="black", alpha=0.7, label=body_label)
+        ax.add_patch(poly)
+    else:
+        for xi, zi in zip(x_i, z_i):
+            circ = Circle((xi, zi), r_body, facecolor="0.6", edgecolor="black",
+                           alpha=0.7, label=body_label)
+            ax.add_patch(circ)
+    plt.xlim(x_min, x_max)
+    zmax = float(z_i.max() + r_body + 60.0)
+    plt.ylim(0.0, zmax)
+    ax.invert_yaxis()  # depth increases downward
+    plt.xlabel("x (m)")
+    plt.ylabel("z (m, downward +)")
+    plt.title("Buried body and surface gravimeters (shape not to scale in x)")
+    plt.legend(loc="upper right", frameon=True)
+    plt.tight_layout()
+    fig_geom = OUTDIR / "geometry_body.png"
+    plt.savefig(fig_geom, format="png", dpi=dpi)
+    plt.show()
+    plt.close()
+
+    # 2) Three stacked profiles: potential -> field -> gradient, same x-axis
+    # (tall multi-panel -- intentionally not the global 16:9 default)
+    fig, (ax0, ax1, ax2) = plt.subplots(3, 1, sharex=True, figsize=(10, 10))
+
+    ax0.plot(x_obs, V_si, color="tab:blue", linewidth=2.2)
+    ax0.axvline(0.0, linestyle="--", color="gray", linewidth=1)
+    ax0.set_ylabel(r"$V$ (m$^2$/s$^2$)")
+    ax0.set_title(r"Potential $V(x) = -Gm/r$ --- broad and smooth")
+    ax0.grid(True, alpha=0.3)
+
+    ax1.plot(x_obs, gz_mgal, color="tab:orange", linewidth=2.2)
+    ax1.axvline(0.0, linestyle="--", color="gray", linewidth=1)
+    ax1.set_ylabel(r"$g_z$ (mGal)")
+    ax1.set_title(r"Field $g_z(x) = Gmz/r^3$ --- narrower, peaks directly over the body")
+    ax1.grid(True, alpha=0.3)
+
+    ax2.plot(x_obs, dgz_dx_E, color="tab:purple", linewidth=2.2)
+    ax2.axvline(0.0, linestyle="--", color="gray", linewidth=1)
+    ax2.set_ylabel("$\\partial g_z/\\partial x$ (E)")
+    ax2.set_xlabel("x (m)")
+    ax2.set_title(r"Gradient $\partial g_z/\partial x$ --- sharp: pinpoints the body's edges")
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    fig_profiles = OUTDIR / "potential_field_gradient.png"
+    plt.savefig(fig_profiles, format="png", dpi=dpi)
+    plt.show()
+    plt.close(fig)
+
+    print("Saved figures:")
+    print(" -", fig_geom)
+    print(" -", fig_profiles)
+
 def plot_gravity_matrix(gz_each_mgal: np.ndarray,
                          gz_total_mgal: np.ndarray,
                          x_obs: np.ndarray,
@@ -187,7 +280,7 @@ def plot_gravity_matrix(gz_each_mgal: np.ndarray,
     plt.xlabel("x (m) at surface")
     plt.ylabel(r"$g_z$ (mGal, downward +)")
     plt.grid(True, alpha=0.3)
-    plt.legend(ncols=2, frameon=True, loc="upper right")
+    plt.legend(ncols=2, frameon=True, loc="upper left")
     fig_profile = OUTDIR / "gz_profile_all.png"
     plt.tight_layout()
     plt.savefig(fig_profile, format="png", dpi=dpi)
@@ -212,7 +305,7 @@ def plot_gravity_matrix(gz_each_mgal: np.ndarray,
     plt.xlabel("x (m)")
     plt.ylabel("z (m, downward +)")
     plt.title("Half-space geometry: source cells and surface gravimeters")
-    plt.legend(frameon=True)
+    plt.legend(frameon=True, loc="upper left")
     plt.tight_layout()
     fig_geom = OUTDIR / "geometry_sources_gravimeters.png"
     plt.savefig(fig_geom, format="png", dpi=dpi)
